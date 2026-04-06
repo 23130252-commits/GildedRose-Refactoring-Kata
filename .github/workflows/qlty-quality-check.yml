@@ -2,56 +2,46 @@ name: Code Quality Analysis (Qlty.sh)
 
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [main]
 
 jobs:
   code-quality:
-    name: Qlty.sh Code Quality
     runs-on: ubuntu-latest
     permissions:
       contents: read
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up JDK 11
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: 'temurin'
           java-version: '11'
-          cache: maven
+          cache: 'maven'
 
-      - name: Build Java project with Maven
+      - name: Build Java project
         run: cd Java && mvn clean install -DskipTests
 
       - name: Install Qlty CLI
         run: |
-          curl -fsSL https://qlty.sh/install | bash
-          $HOME/.qlty/bin/qlty --version
+          curl -sSfL https://qlty.sh/install.sh | bash
+          echo "$HOME/.qlty/bin" >> $GITHUB_PATH
 
-      - name: Run Qlty analysis
+      - name: Verify Qlty installation
+        run: which qlty && qlty --version
+
+      - name: Run Qlty Analysis
         env:
           QLTY_API_KEY: ${{ secrets.QLTY_API_KEY }}
-        run: |
-          export PATH="$HOME/.qlty/bin:$PATH"
-          qlty analyze --no-progress
-        continue-on-error: true
+        run: qlty analyze --no-progress
 
-      - name: Upload Qlty quality report
+      - name: Upload artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
-          name: qlty-report
-          path: |
-            .qlty/
-            Java/target/
-          if-no-files-found: warn
+          name: qlty-analysis
+          path: .qlty/

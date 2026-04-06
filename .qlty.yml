@@ -1,0 +1,35 @@
+version: "1"
+
+plugins:
+  prefix: ""
+  definitions:
+    - plugin: checkstyle
+      enabled: true
+    - plugin: pmd
+      enabled: true
+    - plugin: spotbugs
+      enabled: true
+
+analysis:
+  ruby:
+    enabled: false
+  php:
+    enabled: false
+  javascript:
+    enabled: false
+  typescript:
+    enabled: false
+
+coverage:
+  enabled: false
+
+test_results:
+  enabled: false
+
+exclude_patterns:
+  - "Java/target/**"
+  - "Java/src/test/**"
+  - "**/target/**"
+  - "**/*Test.java"
+  - "**/*Tests.java"
+  - "**/test/**"

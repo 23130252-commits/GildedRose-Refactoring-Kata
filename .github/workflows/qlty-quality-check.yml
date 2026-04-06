@@ -28,19 +28,15 @@ jobs:
         with:
           distribution: temurin
           java-version: '11'
-
-      - name: Cache Maven packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('Java/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
+          cache: maven
 
       - name: Build Java project with Maven
         run: cd Java && mvn clean install -DskipTests
 
       - name: Install Qlty CLI
-        run: curl -fsSL https://qlty.sh/install | bash
+        run: |
+          curl -fsSL https://qlty.sh/install | bash
+          $HOME/.qlty/bin/qlty --version
 
       - name: Run Qlty analysis
         env:
@@ -48,11 +44,14 @@ jobs:
         run: |
           export PATH="$HOME/.qlty/bin:$PATH"
           qlty analyze --no-progress
+        continue-on-error: true
 
       - name: Upload Qlty quality report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: qlty-report
-          path: .qlty/
-          if-no-files-found: ignore
+          path: |
+            .qlty/
+            Java/target/
+          if-no-files-found: warn

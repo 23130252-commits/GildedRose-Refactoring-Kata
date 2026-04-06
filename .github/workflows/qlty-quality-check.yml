@@ -9,6 +9,8 @@ on:
 jobs:
   code-quality:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
